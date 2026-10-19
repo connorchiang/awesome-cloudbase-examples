@@ -9,10 +9,11 @@ COPY deploy-container/settings.json .local/share/code-server/User/settings.json
 # Use bash shell
 ENV SHELL=/bin/bash
 
-RUN sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list \
- && sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list \
- && sed -i '/bullseye-updates/d' /etc/apt/sources.list \
- && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid
+RUN sudo sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list \
+ && sudo sed -i '/bullseye-updates/d' /etc/apt/sources.list \
+ && echo 'Acquire::Check-Valid-Until "false";' | sudo tee /etc/apt/apt.conf.d/99no-check-valid \
+ && sudo apt-get update \
+ && sudo apt-get install -y unzip
 
 # Install unzip + rclone (support for remote filesystem)
 RUN sudo apt-get update && sudo apt-get install unzip -y
