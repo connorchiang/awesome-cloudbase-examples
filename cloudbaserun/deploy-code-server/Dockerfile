@@ -1,5 +1,5 @@
-# Start from the code-server Debian base image
-FROM codercom/code-server:4.9.0
+# 基础镜像升级为最新版 code-server（VS Code 内核新，能装 Claude Code 插件）
+FROM codercom/code-server:latest
 
 USER coder
 
@@ -9,19 +9,14 @@ COPY deploy-container/settings.json .local/share/code-server/User/settings.json
 # Use bash shell
 ENV SHELL=/bin/bash
 
-RUN sudo sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list \
- && sudo sed -i '/bullseye-updates/d' /etc/apt/sources.list \
- && echo 'Acquire::Check-Valid-Until "false";' | sudo tee /etc/apt/apt.conf.d/99no-check-valid \
- && sudo apt-get update \
- && sudo apt-get install -y unzip
-
+# 新镜像基于 bookworm，apt 源没过期，不需要改源，直接装 unzip
 # Install unzip + rclone (support for remote filesystem)
 RUN sudo apt-get update && sudo apt-get install unzip -y
 
 # Set the timezone to Asia/Shanghai
 RUN echo "Asia/Shanghai" | sudo tee /etc/timezone && sudo dpkg-reconfigure --frontend noninteractive tzdata
 
-RUN curl -O https://tcb.cloud.tencent.com/%20cloud-run-function-template-images/web-ide/rclone-v1.70.2-linux-amd64.zip && \
+RUN curl -O https://tcb.cloud.tencent.com/cloudrun-tech-blog-images/web-ide/rclone-v1.70.2-linux-amd64.zip && \
     unzip rclone-v1.70.2-linux-amd64.zip && \
     cd rclone-*-linux-amd64 && \
     sudo cp rclone /usr/bin/ && \
