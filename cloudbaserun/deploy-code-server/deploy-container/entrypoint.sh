@@ -53,6 +53,9 @@ else
     echo "rclone sync $RCLONE_REMOTE_PATH $RCLONE_SOURCE_PATH --exclude claude-config/** $RCLONE_FLAGS -vv" >> /home/coder/pull_remote.sh
     chmod +x /home/coder/push_remote.sh /home/coder/pull_remote.sh
 
+    # ===== 改动 2：后台每 10 分钟自动备份 =====
+    (while true; do sleep 600; sh /home/coder/push_remote.sh; done) &
+
     if rclone ls $RCLONE_REMOTE_PATH; then
 
         if [ $RCLONE_AUTO_PULL = "true" ]; then
