@@ -45,9 +45,13 @@ else
     # Full path to the remote filesystem
     RCLONE_REMOTE_PATH=${RCLONE_REMOTE_NAME:-code-server-remote}:${RCLONE_DESTINATION:-code-server-files}
     RCLONE_SOURCE_PATH=${RCLONE_SOURCE:-$START_DIR}
-    echo "rclone sync $RCLONE_SOURCE_PATH $RCLONE_REMOTE_PATH $RCLONE_FLAGS -vv" > /home/coder/push_remote.sh
-    echo "rclone sync $RCLONE_REMOTE_PATH $RCLONE_SOURCE_PATH $RCLONE_FLAGS -vv" > /home/coder/pull_remote.sh
-    chmod +x push_remote.sh pull_remote.sh
+    # push：同步工作区 + Claude 配置/对话记录（--exclude 防止工作区同步误删 claude-config 目录）
+    echo "rclone sync $RCLONE_SOURCE_PATH $RCLONE_REMOTE_PATH --exclude claude-config/** $RCLONE_FLAGS -vv" > /home/coder/push_remote.sh
+    echo "mkdir -p /home/coder/.claude && rclone sync /home/coder/.claude $RCLONE_REMOTE_PATH/claude-config $RCLONE_FLAGS -vv" >> /home/coder/push_remote.sh
+    # pull：先恢复 Claude 配置，再恢复工作区
+    echo "mkdir -p /home/coder/.claude && rclone sync $RCLONE_REMOTE_PATH/claude-config /home/coder/.claude $RCLONE_FLAGS -vv" > /home/coder/pull_remote.sh
+    echo "rclone sync $RCLONE_REMOTE_PATH $RCLONE_SOURCE_PATH --exclude claude-config/** $RCLONE_FLAGS -vv" >> /home/coder/pull_remote.sh
+    chmod +x /home/coder/push_remote.sh /home/coder/pull_remote.sh
 
     if rclone ls $RCLONE_REMOTE_PATH; then
 
